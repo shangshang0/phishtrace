@@ -1,0 +1,21 @@
+# Docker build context exclusions
+.git
+.gitignore
+docker-phishtrace/
+*.pdf
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+__pycache__
+*.pyc
+.pytest_cache
+.deployment_state.md
+baselines_repos/
+dataset/
+experiments/results/
+experiments/intersection_comparison/

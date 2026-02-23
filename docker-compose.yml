@@ -1,0 +1,67 @@
+# PhishTrace Docker Compose
+# Usage:
+#   docker compose up phishtrace-micro    # Quick test with synthetic data
+#   docker compose up phishtrace-full     # Full production run
+
+services:
+  # ══════════════════════════════════════════════════════════════════════════
+  # Micro mode — synthetic data, fast pipeline validation
+  # ══════════════════════════════════════════════════════════════════════════
+  phishtrace-micro:
+    image: phishtrace:latest
+    # build:
+    #   context: .
+    #   args:
+    #     http_proxy: ${BUILD_PROXY:-}
+    #     https_proxy: ${BUILD_PROXY:-}
+    container_name: phishtrace-micro
+    working_dir: /app
+    entrypoint: ["/bin/bash", "/app/entrypoint.sh"]
+    environment:
+      - PHISHTRACE_MODE=micro
+      - PHISHTRACE_DATA=/data
+      - PHISHTRACE_PROXY=${PHISHTRACE_PROXY:-}
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - EXPERIMENT_INTERVAL=300          # 5 min for testing
+      - CRAWL_URL_INTERVAL=600
+      - CRAWL_TRACE_INTERVAL=600
+      - DISCOVERY_INTERVAL=600
+      - MICRO_PHISHING_LIMIT=20
+      - MICRO_BENIGN_LIMIT=20
+    volumes:
+      - ./docker-phishtrace:/data
+    restart: unless-stopped
+    stop_grace_period: 30s
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # Full mode — real crawling, all experiments, 12h intervals
+  # ══════════════════════════════════════════════════════════════════════════
+  phishtrace-full:
+    image: phishtrace:latest
+    # build:
+    #   context: .
+    #   args:
+    #     http_proxy: ${BUILD_PROXY:-}
+    #     https_proxy: ${BUILD_PROXY:-}
+    container_name: phishtrace-full
+    working_dir: /app
+    entrypoint: ["/bin/bash", "/app/entrypoint.sh"]
+    environment:
+      - PHISHTRACE_MODE=full
+      - PHISHTRACE_DATA=/data
+      - PHISHTRACE_PROXY=${PHISHTRACE_PROXY:-}
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - EXPERIMENT_INTERVAL=43200        # 12 hours
+      - CRAWL_URL_INTERVAL=3600          # 1 hour
+      - CRAWL_TRACE_INTERVAL=1800        # 30 min
+      - DISCOVERY_INTERVAL=3600          # 1 hour
+    volumes:
+      - ./docker-phishtrace:/data
+    restart: unless-stopped
+    stop_grace_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 8G
